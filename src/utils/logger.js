@@ -1,47 +1,38 @@
 const { createLogger, transports, format } = require("winston");
 
-// Função para obter a localização do arquivo e linha do stack trace
+// Extrair local do erro (arquivo:linha)
 function getErrorLocation(error) {
-  if (!error.stack) return "Unknown location";
+  if (!error?.stack) return null;
 
-  // Divida o stack trace em linhas
   const stackLines = error.stack.split("\n");
 
-  // Pegue a segunda linha do stack trace, que deve conter a localização do erro
   if (stackLines.length > 1) {
     const callerLine = stackLines[1].trim();
-    // Tenta capturar o caminho do arquivo e linha usando uma expressão regular
-    const filePathMatch = callerLine.match(/at\s+(.*):(\d+):(\d+)/);
-    if (filePathMatch) {
-      // Retorna o caminho do arquivo e linha
-      return `${filePathMatch[1]}:${filePathMatch[2]}`;
-    }
+    const match = callerLine.match(/at\s+(?:.*\()?(.+):(\d+):(\d+)\)?/);
+    if (match) return `${match[1]}:${match[2]}`;
   }
 
-  return "Unknown location";
+  return null;
 }
 
-// Formatação personalizada para o log
 const customFormat = format.printf(({ timestamp, level, message, error }) => {
-  const location = level === "error" ? getErrorLocation(error) : "";
+  const location = error ? getErrorLocation(error) : null;
 
-  // Cores ajustadas para cada nível de log
   const levelColor =
-    level === "info"
-      ? "\x1b[32m" // Verde
-      : level === "error"
-      ? "\x1b[31m" // Vermelho
-      : "\x1b[35m"; // Roxo para debug
+    level === "info" ? "\x1b[32m" : level === "error" ? "\x1b[31m" : "\x1b[35m";
 
-  const resetColor = "\x1b[0m";
+  const reset = "\x1b[0m";
 
-  return `${timestamp} [${levelColor}${level.toUpperCase()}${resetColor}] ${
+  return `${timestamp} [${levelColor}${level.toUpperCase()}${reset}] ${
     location ? `(${location}) ` : ""
   }${message}${error ? `: ${error.message}` : ""}`;
 });
 
+// Ambientes
+const isDev = process.env.NODE_ENV !== "production";
+
 const logger = createLogger({
-  level: "debug",
+  level: isDev ? "debug" : "info",
   format: format.combine(
     format.timestamp({ format: "DD/MM/YYYY HH:mm:ss.SSS" }),
     format.errors({ stack: true }),
@@ -49,15 +40,8 @@ const logger = createLogger({
   ),
   transports: [
     new transports.Console(),
-    new transports.File({ filename: "app.log" }),
+    new transports.File({ filename: "logs/app.log" }),
   ],
 });
-
-// Funções personalizadas de log
-logger.info = (message) => logger.log("info", message);
-logger.error = (message, error) => {
-  logger.log("error", message, { error });
-};
-logger.debug = (message) => logger.log("debug", message);
 
 module.exports = logger;

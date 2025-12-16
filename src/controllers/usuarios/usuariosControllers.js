@@ -1,13 +1,15 @@
-const usuarioModels = require("../../models/usuarios/usuariosModels");
+const usuariosModels = require("../../models/usuarios/usuariosModels");
 const logger = require("../../utils/logger");
 
 module.exports = {
   async getAllUsuarios(req, res, next) {
     try {
-      const usuarios = await usuarioModels.getAllUsuarios();
+      const usuarios = await usuariosModels.getAllUsuarios();
 
       if (!usuarios || usuarios?.length === 0) {
-        return res.status(200).json({ message: "Nenhum usuário encontrado" });
+        return res
+          .status(200)
+          .json({ message: "Nenhum usuário encontrado no sistema" });
       }
 
       return res.status(200).json(usuarios);
@@ -23,7 +25,7 @@ module.exports = {
     try {
       const { id } = req.params;
 
-      const usuario = await usuarioModels.getUsuarioById(id);
+      const usuario = await usuariosModels.getUsuarioById(id);
 
       if (!usuario) {
         return res.status(404).json({ error: "Usuário não encontrado" });
@@ -54,14 +56,7 @@ module.exports = {
           .json({ error: "Todos os campos são obrigatórios" });
       }
 
-      const { nome, email, senha, autorizacao } = data;
-
-      const usuarioNovo = await usuarioModels.createUsuario({
-        nome,
-        email,
-        senha,
-        autorizacao,
-      });
+      const usuarioNovo = await usuariosModels.createUsuario(data);
 
       return res.status(201).json(usuarioNovo);
     } catch (error) {
@@ -77,10 +72,13 @@ module.exports = {
       const { id } = req.params;
       const data = req.body;
 
-      if (!id) {
-        return res.status(400).json({ error: "ID do usuário é obrigatório" });
+      if (!data || Object.keys(data)?.length === 0) {
+        return res
+          .status(400)
+          .json({ error: "Nenhum dado fornecido para atualização" });
       }
-      const usuarioAtualizado = await usuarioModels.updateUsuario(id, data);
+
+      const usuarioAtualizado = await usuariosModels.updateUsuario(id, data);
 
       return res.status(200).json(usuarioAtualizado);
     } catch (error) {
@@ -95,10 +93,7 @@ module.exports = {
     try {
       const { id } = req.params;
 
-      if (!id) {
-        return res.status(400).json({ error: "ID do usuário é obrigatório" });
-      }
-      const usuarioDeletado = await usuarioModels.deleteUsuario(id);
+      const usuarioDeletado = await usuariosModels.deleteUsuario(id);
 
       return res.status(200).json(usuarioDeletado);
     } catch (error) {

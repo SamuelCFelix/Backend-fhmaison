@@ -19,9 +19,136 @@ model Usuario {
   nome        String
   email       String   @unique
   senha       String
-  autorizacao String
+  autorizacao String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@map("usuarios")
+}
+
+model Cliente {
+  id        String   @id @default(uuid())
+  nome      String
+  cpf       String   @unique
+  telefone  String?
+  email     String?
+  cep       String?
+  cidade    String?
+  bairro    String?
+  rua       String?
+  numero    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contratoReservas ContratoReserva[]
+
+  @@map("clientes")
+}
+
+model ContratoReserva {
+  id                  String    @id @default(uuid())
+  codigo              String    @unique
+  dataEvento          DateTime?
+  tipoEvento          String?
+  nomeCliente         String?
+  cpfCliente          String?
+  valorPago           Float?    @default(0)
+  valorTotal          Float?
+  formaPagamento      String?
+  observacaoPagamento String?
+  statusContrato      Int? //0: Pendente, 1: Pago-metade, 2: Pago-total
+  contratoPdfUrl      String? // Caminho/URL do PDF do contrato
+  hashDocumento       String?   @unique
+  dataAssinatura      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clienteId String?
+  cliente   Cliente? @relation(fields: [clienteId], references: [id])
+
+  reservas Reserva[]
+
+  @@map("contrato_reservas")
+}
+
+model Reserva {
+  id              String   @id @default(uuid())
+  codigo          String   @unique
+  sexo            String
+  categoria       String
+  nome            String
+  telefone        String?
+  euSou           String
+  dataProva       DateTime
+  dataRetirada    DateTime
+  dataDevolucao   DateTime
+  reservaMultipla Boolean
+  valorReserva    Float
+  atendente       String
+  statusReserva   Int //0: Pendente, 1: Retirado, 2: Devolvido
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  contratoReservaId String
+  contratoReserva   ContratoReserva @relation(fields: [contratoReservaId], references: [id], onDelete: Cascade)
+
+  descricaoVestuario DescricaoVestuario[]
+  observacaoReserva  ObservacaoReserva[]
+  acessorioReserva   AcessorioReserva[]
+  multiplaReserva    MultiplaReserva[]
+
+  @@map("reservas")
+}
+
+model DescricaoVestuario {
+  id              String    @id @default(uuid())
+  descricao       String
+  precisaAjuste   Int //0: Não, 1: Sim, 2: Ajuste feito
+  descricaoAjuste String?
+  dataAjuste      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  reservaId String
+  reserva   Reserva @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+
+  @@map("descricao_vestuarios")
+}
+
+model ObservacaoReserva {
+  id         String   @id @default(uuid())
+  observacao String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  reservaId String
+  reserva   Reserva @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+
+  @@map("observacao_reservas")
+}
+
+model AcessorioReserva {
+  id        String   @id @default(uuid())
+  acessorio String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reservaId String
+  reserva   Reserva @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+
+  @@map("acessorio_reservas")
+}
+
+model MultiplaReserva {
+  id        String   @id @default(uuid())
+  codigo    String
+  item      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reservaId String
+  reserva   Reserva @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+
+  @@map("multipla_reservas")
 }

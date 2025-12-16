@@ -51,7 +51,7 @@ module.exports = {
 
       // Verificar se o email já está em uso
       const usuarioExistente = await prisma.usuario.findUnique({
-        where: { email: email },
+        where: { email },
       });
 
       if (usuarioExistente) {

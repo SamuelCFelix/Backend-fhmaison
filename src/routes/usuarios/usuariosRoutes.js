@@ -2,12 +2,12 @@ const express = require("express");
 const routes = express.Router();
 
 // Importar os módulos de rota
-const usuarioRoutes = require("../../controllers/usuarios/usuariosControllers");
+const usuariosControllers = require("../../controllers/usuarios/usuariosControllers");
 
-routes.get("/", usuarioRoutes.getAllUsuarios);
-routes.get("/:id", usuarioRoutes.getUsuarioById);
-routes.post("/", usuarioRoutes.createUsuario);
-routes.put("/:id", usuarioRoutes.updateUsuario);
-routes.delete("/:id", usuarioRoutes.deleteUsuario);
+routes.get("/", usuariosControllers.getAllUsuarios);
+routes.get("/:id", usuariosControllers.getUsuarioById);
+routes.post("/", usuariosControllers.createUsuario);
+routes.put("/:id", usuariosControllers.updateUsuario);
+routes.delete("/:id", usuariosControllers.deleteUsuario);
 
 module.exports = routes;
